@@ -66,6 +66,23 @@
     footer .cols{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:16px}
     @media (max-width:900px){footer .cols{grid-template-columns:1fr 1fr}}
     @media (max-width:560px){footer .cols{grid-template-columns:1fr}}
+    dialog::backdrop{background:rgba(15,63,51,.35)}
+    .modal{border:0;border-radius:16px;background:var(--paper);color:var(--ink);padding:0;box-shadow:var(--shadow);max-width:52
+0px;width:90%}
+    .modal__body{padding:0 18px 18px;display:grid;gap:10px}
+    .modal__header{padding:18px 18px 0}
+    .modal__footer{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+    .input{width:100%;padding:10px;border-radius:10px;border:1px solid #ccc;font:inherit}
+    .status{min-height:1.2em;font-size:.9rem;color:var(--sage)}
+    .blueprint-list{display:grid;gap:12px;padding:0;margin:0;list-style:none}
+    .blueprint-option{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:12px;background:color-mix(in srgb,var(--accent2) 22%, transparent);cursor:pointer;transition:transform .15s ease, box-shadow .15s ease;width:100%}
+    .blueprint-option:is(:hover,.is-selected){transform:translateY(-2px);box-shadow:var(--shadow)}
+    .blueprint-option.is-selected{outline:2px solid color-mix(in srgb,var(--accent1) 60%, transparent)}
+    .blueprint-option span.icon{font-size:1.4rem;line-height:1;margin-top:2px}
+    .blueprint-option input{margin-top:6px;flex-shrink:0}
+    .blueprint-copy{display:grid;gap:4px}
+    .blueprint-copy strong{display:block}
+    .blueprint-copy small{display:block;color:var(--muted);line-height:1.4}
   </style>
 </head>
 <body>
@@ -83,8 +100,8 @@
         <a class="navlink" href="#blueprints">Blueprints</a>
         <a class="navlink" href="#earn">Monetize</a>
         <a class="navlink" href="#community">Community</a>
-        <button class="btn ghost" id="themeToggle" aria-pressed="false">Theme</button>
-        <button class="btn cta" id="openSignup">Join the Waitlist</button>
+        <button class="btn ghost" id="themeToggle" aria-pressed="false">Toggle theme</button>
+        <button class="btn cta" data-modal-target="signupModal">Join the Waitlist</button>
       </nav>
     </div>
   </header>
@@ -97,7 +114,7 @@
           <h1>Your Creative Universe Starts Here</h1>
           <p class="lead">Learn, create, and share with tools that grow with your imagination.</p>
           <div class="cta-row">
-            <button class="btn cta" id="openSignup2">Join the Waitlist</button>
+            <button class="btn cta" data-modal-target="signupModal">Join the Waitlist</button>
             <a class="btn ghost" href="#how">Explore Features</a>
           </div>
         </div>
@@ -133,7 +150,7 @@
     <section class="container section" id="blueprints">
       <h2>Project Blueprints</h2>
       <p class="lead">Templates for books, logos, animations, clothing, and more.</p>
-      <div class="cta-row"><a class="btn cta" href="#" aria-haspopup="dialog">Try a Blueprint</a></div>
+      <div class="cta-row"><button class="btn cta" data-modal-target="blueprintModal" aria-haspopup="dialog">Try a Blueprint</button></div>
     </section>
 
     <!-- Monetize -->
@@ -155,7 +172,7 @@
         <div class="card">Remix badge + collab note</div>
         <div class="card">Comment preview</div>
       </div>
-      <div class="cta-row" style="margin-top:12px"><a class="btn ghost" href="#" aria-haspopup="dialog">Join a Creative Circle</a></div>
+      <div class="cta-row" style="margin-top:12px"><button class="btn ghost" data-modal-target="communityModal" aria-haspopup="dialog">Join a Creative Circle</button></div>
     </section>
 
     <!-- Accessibility -->
@@ -197,17 +214,96 @@
   </footer>
 
   <!-- Waitlist Modal (simple) -->
-  <dialog id="signupModal" style="border:0;border-radius:16px;background:var(--paper);color:var(--ink);padding:0;box-shadow:var(--shadow);max-width:520px;width:90%">
-    <form method="dialog">
-      <div style="padding:18px 18px 0 18px"><h2 style="margin:0 0 8px">Join the Waitlist</h2>
-        <p class="lead" style="margin:0 0 12px">Be the first to try CREATIVA. No spam, ever.</p></div>
-      <div style="padding:0 18px 18px;display:grid;gap:10px">
-        <label> Name (optional)<br><input style="width:100%;padding:10px;border-radius:10px;border:1px solid #ccc" name="name"/></label>
-        <label> Email <br><input style="width:100%;padding:10px;border-radius:10px;border:1px solid #ccc" type="email" name="email" required/></label>
-        <label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" required/> <small>I agree to receive early product emails. I can unsubscribe any time.</small></label>
-        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+  <dialog id="signupModal" class="modal">
+    <form method="dialog" id="waitlistForm" novalidate>
+      <div class="modal__header">
+        <h2 style="margin:0 0 8px">Join the Waitlist</h2>
+        <p class="lead" style="margin:0 0 12px">Be the first to try CREATIVA. No spam, ever.</p>
+      </div>
+      <div class="modal__body">
+        <label for="waitlistName"> Name (optional)<br><input class="input" id="waitlistName" name="name" autocomplete="name"/></label>
+        <label for="waitlistEmail"> Email <br><input class="input" id="waitlistEmail" type="email" name="email" autocomplete="email" required/></label>
+        <label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="waitlistConsent" required/> <small>I agree to receive early product emails. I can unsubscribe any time.</small></label>
+        <p class="status" id="waitlistMessage" role="status" aria-live="polite"></p>
+        <div class="modal__footer">
           <button class="btn ghost" value="cancel">Cancel</button>
           <button class="btn cta" value="submit">Join</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="blueprintModal" class="modal" aria-labelledby="blueprintTitle">
+    <form method="dialog">
+      <div class="modal__header">
+        <h2 id="blueprintTitle" style="margin:0 0 8px">Blueprint Library</h2>
+        <p class="lead" style="margin:0 0 12px">Pick a starting point to jump into a guided project.</p>
+      </div>
+      <div class="modal__body">
+        <ul class="blueprint-list">
+          <li>
+            <label class="blueprint-option">
+              <input type="radio" name="blueprint" value="Publishing Kit" required>
+              <span class="icon" aria-hidden="true">📚</span>
+              <span class="blueprint-copy">
+                <strong>Publishing Kit</strong>
+                <small>Plot outlines, chapter beats, and layout exports.</small>
+              </span>
+            </label>
+          </li>
+          <li>
+            <label class="blueprint-option">
+              <input type="radio" name="blueprint" value="Brand Sprint" required>
+              <span class="icon" aria-hidden="true">🎨</span>
+              <span class="blueprint-copy">
+                <strong>Brand Sprint</strong>
+                <small>Logo explorations, palette helpers, and mock presentation decks.</small>
+              </span>
+            </label>
+          </li>
+          <li>
+            <label class="blueprint-option">
+              <input type="radio" name="blueprint" value="Motion Storyboard" required>
+              <span class="icon" aria-hidden="true">🎬</span>
+              <span class="blueprint-copy">
+                <strong>Motion Storyboard</strong>
+                <small>Animation timelines, shot checklists, and audio cues.</small>
+              </span>
+            </label>
+          </li>
+          <li>
+            <label class="blueprint-option">
+              <input type="radio" name="blueprint" value="Wearable Capsule" required>
+              <span class="icon" aria-hidden="true">🧵</span>
+              <span class="blueprint-copy">
+                <strong>Wearable Capsule</strong>
+                <small>Pattern generator, material tracker, and print-ready files.</small>
+              </span>
+            </label>
+          </li>
+        </ul>
+        <p class="status" id="blueprintMessage" role="status" aria-live="polite"></p>
+        <div class="modal__footer">
+          <button class="btn ghost" value="cancel">Close</button>
+          <button class="btn cta" value="submit">Start with this</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="communityModal" class="modal" aria-labelledby="communityTitle">
+    <form method="dialog">
+      <div class="modal__header">
+        <h2 id="communityTitle" style="margin:0 0 8px">Join a Creative Circle</h2>
+        <p class="lead" style="margin:0 0 12px">Tell us what you love to make and we’ll connect you with collaborators.</p>
+      </div>
+      <div class="modal__body">
+        <label for="circleDiscipline"> Primary focus<br><input class="input" id="circleDiscipline" name="discipline" placeholder="Illustration, music, fashion…" required/></label>
+        <label for="circleGoal"> What are you hoping to find?<br><textarea class="input" id="circleGoal" name="goal" rows="3" style="resize:vertical"></textarea></label>
+        <p class="status" id="communityMessage" role="status" aria-live="polite"></p>
+        <div class="modal__footer">
+          <button class="btn ghost" value="cancel">Maybe later</button>
+          <button class="btn cta" value="submit">Request Invite</button>
         </div>
       </div>
     </form>
@@ -218,18 +314,96 @@
     const themeBtn = document.getElementById('themeToggle');
     const root = document.documentElement;
     const pref = localStorage.getItem('creativa_theme');
-    if(pref){ root.setAttribute('data-theme', pref); }
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if(pref){
+      root.setAttribute('data-theme', pref);
+    } else if(prefersDark){
+      root.setAttribute('data-theme', 'dark');
+    }
+
+    const updateThemeLabel = () => {
+      const isDark = root.getAttribute('data-theme') === 'dark';
+      themeBtn.textContent = isDark ? 'Light theme' : 'Dark theme';
+      themeBtn.setAttribute('aria-pressed', String(isDark));
+    };
+
+    updateThemeLabel();
+
     themeBtn.addEventListener('click',()=>{
-      const isDark = root.getAttribute('data-theme')==='dark';
-      root.setAttribute('data-theme', isDark? 'light':'dark');
-      localStorage.setItem('creativa_theme', isDark? 'light':'dark');
+      const isDark = root.getAttribute('data-theme') === 'dark';
+      const next = isDark ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      localStorage.setItem('creativa_theme', next);
+      updateThemeLabel();
     });
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // Waitlist modal demo (wire to backend later)
-    const modal = document.getElementById('signupModal');
-    document.getElementById('openSignup').addEventListener('click',()=>modal.showModal());
-    document.getElementById('openSignup2').addEventListener('click',()=>modal.showModal());
+    // Modal handling
+    const getDialog = id => document.getElementById(id);
+    document.querySelectorAll('[data-modal-target]').forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        const target = trigger.getAttribute('data-modal-target');
+        const dialog = getDialog(target);
+        dialog?.showModal();
+      });
+    });
+
+    document.querySelectorAll('dialog').forEach(dialog => {
+      dialog.addEventListener('close', () => {
+        dialog.querySelector('form')?.reset();
+        dialog.querySelectorAll('.status').forEach(el => el.textContent = '');
+        dialog.querySelectorAll('.blueprint-option').forEach(opt => opt.classList.remove('is-selected'));
+      });
+    });
+
+    // Waitlist form demo (wire to backend later)
+    const waitlistForm = document.getElementById('waitlistForm');
+    const waitlistMessage = document.getElementById('waitlistMessage');
+    const signupModal = getDialog('signupModal');
+
+    waitlistForm?.addEventListener('submit', event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      if(!form.reportValidity()) return;
+      const data = new FormData(form);
+      const name = (data.get('name') || '').toString().trim();
+      const email = (data.get('email') || '').toString().trim();
+      waitlistMessage.textContent = `Thanks ${name ? name + ' ' : ''}—we'll reach out at ${email}!`;
+      form.reset();
+      setTimeout(()=> signupModal.close(), 1200);
+    });
+
+    const blueprintDialog = getDialog('blueprintModal');
+    const blueprintForm = blueprintDialog?.querySelector('form');
+    const blueprintOptions = blueprintDialog ? Array.from(blueprintDialog.querySelectorAll('.blueprint-option')) : [];
+    const blueprintMessage = document.getElementById('blueprintMessage');
+
+    blueprintOptions.forEach(option => {
+      const input = option.querySelector('input');
+      input?.addEventListener('change', () => {
+        blueprintOptions.forEach(opt => opt.classList.toggle('is-selected', opt.querySelector('input')?.checked));
+      });
+    });
+
+    blueprintForm?.addEventListener('submit', event => {
+      event.preventDefault();
+      if(!blueprintForm.reportValidity()) return;
+      const choice = blueprintForm.blueprint.value;
+      blueprintMessage.textContent = `Great choice! We'll load the ${choice} workspace for you.`;
+      setTimeout(()=> blueprintDialog.close(), 1200);
+    });
+
+    const communityForm = getDialog('communityModal')?.querySelector('form');
+    const communityMessage = document.getElementById('communityMessage');
+    communityForm?.addEventListener('submit', event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      if(!form.reportValidity()) return;
+      const focus = form.discipline.value.trim();
+      communityMessage.textContent = `Awesome! We'll introduce you to makers in "${focus}" soon.`;
+      form.reset();
+      setTimeout(()=> getDialog('communityModal').close(), 1200);
+    });
 
     // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(a=>{
