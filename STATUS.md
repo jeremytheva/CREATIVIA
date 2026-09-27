@@ -16,8 +16,8 @@ requires_owner_decision: false
 current_main_commit: "f3f7b0c480b26bf755627a94df48ed3902686118"
 current_candidate_commit: "925561b746cd7b27d1b2ef025a54f07b25b8fa0d"
 latest_validated_commit: UNVERIFIED
-latest_deployed_commit: "b33496c57894d68bf926cf556fb7a8e3b07ae199"
-latest_runtime_verified_commit: "b33496c57894d68bf926cf556fb7a8e3b07ae199"
+latest_deployed_commit: "2ed10f73dae2ffc34278c2417204f30b8beeda38"
+latest_runtime_verified_commit: "2ed10f73dae2ffc34278c2417204f30b8beeda38"
 latest_browser_verified_commit: UNVERIFIED
 validation:
   static: NOT_RUN
